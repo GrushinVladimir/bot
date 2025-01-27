@@ -2,7 +2,7 @@ import logging
 import httpx
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputFile
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, JobQueue
-
+import os
 # Настройка логирования
 logging.basicConfig(
     level=logging.DEBUG,
@@ -12,7 +12,7 @@ logging.basicConfig(
 # Конфигурация
 API_CHANGES_URL = 'https://mgkpp.by/API.php'  # API для изменений
 API_SCHEDULE_URL = 'https://mgkpp.by/API2.php'  # API для расписания
-BOT_TOKEN = 'BOT_TOKEN'  # Замените на ваш токен
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 }
