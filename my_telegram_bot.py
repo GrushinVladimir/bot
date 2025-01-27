@@ -12,7 +12,7 @@ logging.basicConfig(
 # Конфигурация
 API_CHANGES_URL = os.getenv('API')  # API для изменений
 API_SCHEDULE_URL = os.getenv('API2')  # API для расписания
-BOT_TOKEN = os.getenv('BOT_TOKEN')
+BOT_TOKEN = os.getenv('BOT_TOKEN1')
 
 if not BOT_TOKEN:
     raise ValueError("Токен бота не найден. Убедитесь, что переменная окружения BOT_TOKEN установлена.")
