@@ -10,8 +10,8 @@ logging.basicConfig(
 )
 
 # Конфигурация
-API_CHANGES_URL = 'https://mgkpp.by/API.php'  # API для изменений
-API_SCHEDULE_URL = 'https://mgkpp.by/API2.php'  # API для расписания
+API_CHANGES_URL = os.getenv('API')  # API для изменений
+API_SCHEDULE_URL = os.getenv('API2')  # API для расписания
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 if not BOT_TOKEN:
