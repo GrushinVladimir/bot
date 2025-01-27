@@ -1,0 +1,11 @@
+app = "my_telegram_bot.py"  # Замените на имя вашего приложения
+
+[build]
+  image = "Dockerfile"  # Имя Docker-образа
+
+[env]
+  BOT_TOKEN = "7842036460:AAEI3Su89L71uzplAI6OsbIBwhzgJRiJGHE"  # Укажите токен вашего бота
+
+[http_service]
+  internal_port = 8080  # Порт, который будет использовать приложение
+  force_https = true
