@@ -13,6 +13,10 @@ logging.basicConfig(
 API_CHANGES_URL = 'https://mgkpp.by/API.php'  # API для изменений
 API_SCHEDULE_URL = 'https://mgkpp.by/API2.php'  # API для расписания
 BOT_TOKEN = os.getenv('BOT_TOKEN')
+
+if not BOT_TOKEN:
+    raise ValueError("Токен бота не найден. Убедитесь, что переменная окружения BOT_TOKEN установлена.")
+    
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 }
