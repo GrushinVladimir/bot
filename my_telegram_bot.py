@@ -12,7 +12,7 @@ logging.basicConfig(
 # Конфигурация
 API_CHANGES_URL = 'https://mgkpp.by/API.php'  # API для изменений
 API_SCHEDULE_URL = 'https://mgkpp.by/API2.php'  # API для расписания
-BOT_TOKEN = 'BOT_TOKEN'
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 if not BOT_TOKEN:
     raise ValueError("Токен бота не найден. Убедитесь, что переменная окружения BOT_TOKEN установлена.")
