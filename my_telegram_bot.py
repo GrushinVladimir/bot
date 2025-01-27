@@ -12,7 +12,7 @@ logging.basicConfig(
 # Конфигурация
 API_CHANGES_URL = os.getenv('API')  # API для изменений
 API_SCHEDULE_URL = os.getenv('API2')  # API для расписания
-BOT_TOKEN = os.getenv('BOT_TOKEN1')
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 if not BOT_TOKEN:
     raise ValueError("Токен бота не найден. Убедитесь, что переменная окружения BOT_TOKEN установлена.")
@@ -28,9 +28,11 @@ active_chats = set()  # Множество активных чатов, где �
 # Асинхронная функция для получения данных с API изменений
 async def fetch_changes_data():
     try:
+        logging.info(f"Запрос к {API_CHANGES_URL}")
         async with httpx.AsyncClient(verify=False, headers=HEADERS) as client:
             response = await client.get(API_CHANGES_URL)
             response.raise_for_status()
+            logging.info("Данные успешно получены.")
             return response.json()
     except Exception as e:
         logging.error(f"Ошибка при запросе к API изменений: {e}")
