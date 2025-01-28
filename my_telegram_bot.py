@@ -28,11 +28,9 @@ active_chats = set()  # Множество активных чатов, где �
 # Асинхронная функция для получения данных с API изменений
 async def fetch_changes_data():
     try:
-        logging.info(f"Запрос к {API_CHANGES_URL}")
         async with httpx.AsyncClient(verify=False, headers=HEADERS) as client:
             response = await client.get(API_CHANGES_URL)
             response.raise_for_status()
-            logging.info("Данные успешно получены.")
             return response.json()
     except Exception as e:
         logging.error(f"Ошибка при запросе к API изменений: {e}")
@@ -110,7 +108,7 @@ async def notify_users(context: ContextTypes.DEFAULT_TYPE, folder, resource, dat
                 await context.bot.send_document(
                     chat_id=chat_id,
                     document=InputFile(pdf_file, filename=filename),
-                    caption=f"Файл: {filename}"
+                    caption=f"День: {filename}"
                 )
         except Exception as e:
             logging.error(f"Ошибка при отправке PDF: {e}")
@@ -168,8 +166,10 @@ async def send_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str,
         logging.error(f"Ошибка при отправке PDF: {e}")
         await update.callback_query.message.reply_text("Не удалось отправить PDF.")
 
-# Обработчик команды /start
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# Обработчик команды /about
+async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Бот открывает вам доступ к быстрому получению расписания для своей группы и изменениям в основном расписании.\n\nЧтобы узнать расписание, воспользуйтесь командой /raspisanie или используйте Меню. \n\nВам также будут приходить уведомления, если расписание изменится.")
+async def raspisanie(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
     active_chats.add(chat_id)  # Добавляем чат в активные
     keyboard = [
@@ -177,9 +177,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("Изменения в расписании", callback_data="changes")]
     ]
     await update.message.reply_text(
-        "Выберите раздел:",
+        "Сделайте выбор",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
+# Обработчик команды /start
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Добро пожаловать, этот бот открывает вам доступ к быстрому получению расписания для своей группы и изменениям в основном расписании.\n\nЧтобы узнать расписание, воспользуйтесь командой /raspisanie или используйте Меню. \n\nВам также будут приходить уведомления, если расписание изменится.")
 
 # Обработчик callback-запросов
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -192,7 +195,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if folders:
             keyboard = create_changes_folders_keyboard(folders)
             await query.edit_message_text(
-                "📅 Выберите неделю:",
+                "📅 Выберите неделю",
                 reply_markup=keyboard
             )
         else:
@@ -202,7 +205,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if resources:
             keyboard = create_schedule_keyboard(resources)
             await query.edit_message_text(
-                "📚 Выберите группу:",
+                "📚 Выберите группу",
                 reply_markup=keyboard
             )
         else:
@@ -239,7 +242,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if folders:
             keyboard = create_changes_folders_keyboard(folders)
             await query.edit_message_text(
-                "📅 Выберите неделю:",
+                "📅 Выберите неделю",
                 reply_markup=keyboard
             )
     elif data == "back_to_main_menu":
@@ -248,22 +251,32 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("Изменения в расписании", callback_data="changes")]
         ]
         await query.edit_message_text(
-            "Выберите раздел:",
+            "Сделайте выбор:",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
     elif data == "refresh_changes":
         folders = await fetch_changes_data()
         if folders:
-            keyboard = create_changes_folders_keyboard(folders)
-            await query.edit_message_text(
-                "📅 Выберите неделю:",
-                reply_markup=keyboard
-            )
+            # Проверяем, изменились ли данные
+            if folders != resources_state.get("changes"):
+                keyboard = create_changes_folders_keyboard(folders)
+                await query.edit_message_text(
+                    "📅 Выберите неделю",
+                    reply_markup=keyboard
+                )
+                resources_state["changes"] = folders  # Обновляем состояние
+            else:
+                # Если данные не изменились, показываем всплывающее уведомление
+                await query.answer("Обновлений не найдено.", show_alert=False)  # show_alert=False для небольшого уведомления
+        else:
+            await query.answer("Не удалось загрузить данные.", show_alert=True)
 
 # Запуск бота
 def main():
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("about", about))
+    application.add_handler(CommandHandler("raspisanie", raspisanie))
     application.add_handler(CallbackQueryHandler(handle_callback))
 
     # Настройка периодической задачи для проверки обновлений каждые 15 секунд
