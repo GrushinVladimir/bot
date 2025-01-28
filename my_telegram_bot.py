@@ -89,9 +89,9 @@ async def notify_users(context: ContextTypes.DEFAULT_TYPE, folder, resource, dat
     for chat_id in active_chats:
         message = "Внимание, изменение!!!\n"
         if data_type == "changes":
-            message += f"Неделя: {folder['pagetitle']}\nФайл: {resource['pagetitle']}"
+            message += f"Неделя: {folder['pagetitle']}\nДень: {resource['pagetitle']}"
         elif data_type == "schedule":
-            message += f"День: {resource['pagetitle']}"
+            message += f"Файл: {resource['pagetitle']}"
 
         # Отправляем текстовое сообщение
         await context.bot.send_message(chat_id=chat_id, text=message)
