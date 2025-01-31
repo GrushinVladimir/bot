@@ -20,7 +20,6 @@ if not BOT_TOKEN:
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 }
-
 # Глобальное состояние ресурсов
 resources_state = {}
 active_chats = set()  # Множество активных чатов, где пользователь запустил бота
@@ -48,6 +47,7 @@ async def fetch_schedule_data():
         return None
 
 # Функция для проверки изменений
+# Функция для проверки изменений
 async def check_for_updates(context: ContextTypes.DEFAULT_TYPE):
     logging.info("Проверка обновлений...")
     changes_data = await fetch_changes_data()
@@ -66,8 +66,11 @@ async def check_for_updates(context: ContextTypes.DEFAULT_TYPE):
                 for j, resource in enumerate(folder.get('resources', [])):
                     if j >= len(resources_state["changes"][i].get('resources', [])):
                         continue  # Пропустить, если новый ресурс добавлен
-                    if resource != resources_state["changes"][i]['resources'][j]:
-                        # Обнаружено изменение
+                    # Проверяем, что ссылка не пустая и не равна "http://"
+                    if resource.get('url', '').strip() in ("", "http://"):
+                        continue  # Пропустить, если ссылка пустая или равна "http://"
+                    if resource['url'] != resources_state["changes"][i]['resources'][j]['url']:
+                        # Обнаружено изменение в ссылке
                         await notify_users(context, folder, resource, "changes")
             resources_state["changes"] = changes_data  # Обновляем состояние
 
@@ -79,8 +82,11 @@ async def check_for_updates(context: ContextTypes.DEFAULT_TYPE):
             for i, resource in enumerate(schedule_data):
                 if i >= len(resources_state["schedule"]):
                     continue  # Пропустить, если новый ресурс добавлен
-                if resource != resources_state["schedule"][i]:
-                    # Обнаружено изменение
+                # Проверяем, что ссылка не пустая и не равна "http://"
+                if resource.get('url', '').strip() in ("", "http://"):
+                    continue  # Пропустить, если ссылка пустая или равна "http://"
+                if resource['url'] != resources_state["schedule"][i]['url']:
+                    # Обнаружено изменение в ссылке
                     await notify_users(context, None, resource, "schedule")
             resources_state["schedule"] = schedule_data  # Обновляем состояние
 
@@ -89,9 +95,9 @@ async def notify_users(context: ContextTypes.DEFAULT_TYPE, folder, resource, dat
     for chat_id in active_chats:
         message = "Внимание, изменение!!!\n"
         if data_type == "changes":
-            message += f"Неделя: {folder['pagetitle']}\nДень: {resource['pagetitle']}"
+            message += f"Неделя: {folder['pagetitle']}\nФайл: {resource['pagetitle']}"
         elif data_type == "schedule":
-            message += f"Файл: {resource['pagetitle']}"
+            message += f"День: {resource['pagetitle']}"
 
         # Отправляем текстовое сообщение
         await context.bot.send_message(chat_id=chat_id, text=message)
@@ -251,7 +257,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("Изменения в расписании", callback_data="changes")]
         ]
         await query.edit_message_text(
-            "Сделайте выбор:",
+            "Сделайте выбор",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
     elif data == "refresh_changes":
