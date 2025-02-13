@@ -47,7 +47,6 @@ async def fetch_schedule_data():
         return None
 
 # Функция для проверки изменений
-# Функция для проверки изменений
 async def check_for_updates(context: ContextTypes.DEFAULT_TYPE):
     logging.info("Проверка обновлений...")
     changes_data = await fetch_changes_data()
@@ -91,18 +90,18 @@ async def check_for_updates(context: ContextTypes.DEFAULT_TYPE):
             resources_state["schedule"] = schedule_data  # Обновляем состояние
 
 # Функция для отправки уведомлений
-async def notify_users(context: ContextTypes.DEFAULT_TYPE, folder, resource, data_type):
-    for chat_id in active_chats:
-        message = "Тестовое сообщение об изменении!!!\n"
-        if data_type == "changes":
-            message += f"Неделя: {folder['pagetitle']}\nФайл: {resource['pagetitle']}"
-        elif data_type == "schedule":
-            message += f"День: {resource['pagetitle']}"
+#async def notify_users(context: ContextTypes.DEFAULT_TYPE, folder, resource, data_type):
+    #for chat_id in active_chats:
+       # message = "Тестовое сообщение об изменении!!!\n"
+       # if data_type == "changes":
+        #    message += f"Неделя: {folder['pagetitle']}\nФайл: {resource['pagetitle']}"
+      # elif data_type == "schedule":
+       #     message += f"День: {resource['pagetitle']}"
 
         # Отправляем текстовое сообщение с кнопкой
-        keyboard = [[InlineKeyboardButton("Открыть файл", callback_data=f"send_pdf_{resource['url']}")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await context.bot.send_message(chat_id=chat_id, text=message, reply_markup=reply_markup)
+       # keyboard = [[InlineKeyboardButton("Открыть файл", callback_data=f"send_pdf_{resource['url']}")]]
+       # reply_markup = InlineKeyboardMarkup(keyboard)
+       # await context.bot.send_message(chat_id=chat_id, text=message, reply_markup=reply_markup)
 
 # Создание клавиатуры с папками для изменений
 def create_changes_folders_keyboard(folders):
