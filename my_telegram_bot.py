@@ -93,17 +93,32 @@ async def check_for_updates(context: ContextTypes.DEFAULT_TYPE):
 # Функция для отправки уведомлений
 async def notify_users(context: ContextTypes.DEFAULT_TYPE, folder, resource, data_type):
     for chat_id in active_chats:
-        message = "Внимание, изменение!!!\n"
+        message = "Тестовое сообщение об изменении!!!\n"
         if data_type == "changes":
             message += f"Неделя: {folder['pagetitle']}\nФайл: {resource['pagetitle']}"
         elif data_type == "schedule":
             message += f"День: {resource['pagetitle']}"
 
-        # Отправляем текстовое сообщение с кнопкой
-        keyboard = [[InlineKeyboardButton("Скачать PDF", url=resource['url'])]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await context.bot.send_message(chat_id=chat_id, text=message, reply_markup=reply_markup)
+        # Отправляем текстовое сообщение
+        await context.bot.send_message(chat_id=chat_id, text=message)
 
+        # Отправляем PDF-файл напрямую
+        try:
+            async with httpx.AsyncClient(verify=False, headers=HEADERS) as client:
+                response = await client.get(resource['url'])
+                response.raise_for_status()
+                pdf_file = response.content
+                filename = resource['pagetitle']
+                if not filename.endswith('.pdf'):
+                    filename += '.pdf'
+                await context.bot.send_document(
+                    chat_id=chat_id,
+                    document=InputFile(pdf_file, filename=filename),
+                    caption=f"День: {filename}"
+                )
+        except Exception as e:
+            logging.error(f"Ошибка при отправке PDF: {e}")
+            await context.bot.send_message(chat_id=chat_id, text="Не удалось отправить PDF.")
 
 # Создание клавиатуры с папками для изменений
 def create_changes_folders_keyboard(folders):
