@@ -99,26 +99,10 @@ async def notify_users(context: ContextTypes.DEFAULT_TYPE, folder, resource, dat
         elif data_type == "schedule":
             message += f"День: {resource['pagetitle']}"
 
-        # Отправляем текстовое сообщение
-        await context.bot.send_message(chat_id=chat_id, text=message)
-
-        # Отправляем PDF-файл напрямую
-        try:
-            async with httpx.AsyncClient(verify=False, headers=HEADERS) as client:
-                response = await client.get(resource['url'])
-                response.raise_for_status()
-                pdf_file = response.content
-                filename = resource['pagetitle']
-                if not filename.endswith('.pdf'):
-                    filename += '.pdf'
-                await context.bot.send_document(
-                    chat_id=chat_id,
-                    document=InputFile(pdf_file, filename=filename),
-                    caption=f"День: {filename}"
-                )
-        except Exception as e:
-            logging.error(f"Ошибка при отправке PDF: {e}")
-            await context.bot.send_message(chat_id=chat_id, text="Не удалось отправить PDF.")
+        # Отправляем текстовое сообщение с кнопкой
+        keyboard = [[InlineKeyboardButton("Открыть файл", callback_data=f"send_pdf_{resource['url']}")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await context.bot.send_message(chat_id=chat_id, text=message, reply_markup=reply_markup)
 
 # Создание клавиатуры с папками для изменений
 def create_changes_folders_keyboard(folders):
@@ -243,6 +227,12 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if resources and 0 <= resource_index < len(resources):
             resource = resources[resource_index]
             await send_pdf(update, context, resource['url'], resource['pagetitle'])
+    elif data.startswith("send_pdf_"):  # Новый обработчик для отправки PDF по запросу
+        url = data.split("_", 2)[2]  # Извлекаем URL из callback_data
+        filename = url.split("/")[-1]  # Извлекаем имя файла из URL
+        if not filename.endswith('.pdf'):
+            filename += '.pdf'
+        await send_pdf(update, context, url, filename)
     elif data == "back_to_changes_folders":
         folders = await fetch_changes_data()
         if folders:
