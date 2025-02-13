@@ -104,23 +104,6 @@ async def notify_users(context: ContextTypes.DEFAULT_TYPE, folder, resource, dat
         reply_markup = InlineKeyboardMarkup(keyboard)
         await context.bot.send_message(chat_id=chat_id, text=message, reply_markup=reply_markup)
 
-        # Отправляем PDF-файл
-        try:
-            async with httpx.AsyncClient(verify=False, headers=HEADERS) as client:
-                response = await client.get(resource['url'])
-                response.raise_for_status()
-                pdf_file = response.content
-                filename = resource['pagetitle']
-                if not filename.endswith('.pdf'):
-                    filename += '.pdf'
-                await context.bot.send_document(
-                    chat_id=chat_id,
-                    document=InputFile(pdf_file, filename=filename),
-                    caption=f"День: {filename}"
-                )
-        except Exception as e:
-            logging.error(f"Ошибка при отправке PDF: {e}")
-            await context.bot.send_message(chat_id=chat_id, text="Не удалось отправить PDF.")
 
 # Создание клавиатуры с папками для изменений
 def create_changes_folders_keyboard(folders):
