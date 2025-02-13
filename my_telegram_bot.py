@@ -99,8 +99,10 @@ async def notify_users(context: ContextTypes.DEFAULT_TYPE, folder, resource, dat
         elif data_type == "schedule":
             message += f"День: {resource['pagetitle']}"
 
-        # Отправляем текстовое сообщение
-        await context.bot.send_message(chat_id=chat_id, text=message)
+        # Отправляем текстовое сообщение с кнопкой
+        keyboard = [[InlineKeyboardButton("Скачать PDF", url=resource['url'])]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await context.bot.send_message(chat_id=chat_id, text=message, reply_markup=reply_markup)
 
         # Отправляем PDF-файл
         try:
